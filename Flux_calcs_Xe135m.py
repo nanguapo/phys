@@ -1,141 +1,102 @@
 import pandas as pd
 import numpy as np
+import os
 
-#lets find activity
 
 #This is the time interval that these data have been run for. If there are different steplen across then we need to define more than one time interval
 time_interval = 50#seconds
-cd_time_interval =20000
-Au_peak_efficiency = 0.00592809347158196 #taken from spreadsheet
+cd_time_interval =2000#seconds
+ #taken from spreadsheet
+
+
+#Nickel Variables
+og_Ni_abundance = 1.58E+21
+Ni_decay_constant = 0.0000001132
+ni_btw_EOI_Boc = 395108
+Ni_target_isotope_abundance = 0.68077
 Ni_peak_efficiency = 0.003404046236
+Ni_branching_ratio = 0.9945
+Ni_crosssectional_Area = 3.5E-26
+Ni_abundance = og_Ni_abundance*Ni_target_isotope_abundance
 
-def calculate_activity(input_path, output_path, interval, efficiency):
+# Gold-Cadmium-Covered variables
+Au_branching_ratio = 0.9562
+Au_Epithermal_crosssectional_area = 1.55E-21
+Au_fast_crosssectional_area = 9.8E-26
+Au_percent_abundance = 1
+Au_MM = 196.967
+Au_peak_efficiency = 0.00592809347158196
+Au_decay_constant = 0.000002976
+Cd_foil_mass = 0.02048
+Cd_foil_purity = .0061
+CdAu_abundance = (6.0221408e+23*Cd_foil_mass*Cd_foil_purity*Au_percent_abundance/Au_MM)
+CdAu_decay_time = 1341183
+Cd_livetime = 264047.81
+
+#plain gold wire variables 
+Au_abundance = 385000000000000000
+Au_decay_time = 386483
+Au_livetime = 6076
+Au_thermal_crosssectional_area = 9.865E-23
+
+
+
+
+
+def calculate_activity_and_ReactionRate(input_path, count_time, efficiency, decay_constant, branching_ratio, time_irradiated, abundance, decay_time):
     counts = np.load(input_path)
-    activity = counts / (interval * efficiency)
-    np.save(output_path, activity)
-
-# Au (plain)
-calculate_activity(
-    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities, Counts and Sigmas /Au_measured_activity.npy',
-    output_path=f'/Volumes/SandySSD/Physics/Xenon/Plain_Gold_Activity_{time_interval}s',
-    interval=time_interval,
-    efficiency=Au_peak_efficiency
-)
-
-# Au (cadmium covered)
-calculate_activity(
-    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities, Counts and Sigmas /Ni_measured_activity.npy',
-    output_path=f'/Volumes/SandySSD/Physics/Xenon/Cadmium_Gold_Activity_{time_interval}s',
-    interval=cd_time_interval,
-    efficiency=Au_peak_efficiency
-)
-
-# Ni
-calculate_activity(
-    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities, Counts and Sigmas /Ni_measured_activity.npy',
-    output_path=f'/Volumes/SandySSD/Physics/Xenon/Nickel_Activity_{time_interval}s',
-    interval=time_interval,
-    efficiency=Ni_peak_efficiency
-)
+    Net_counts = np.sum(counts)
+    activity = Net_counts * decay_constant / ((1 - np.exp(-decay_constant * count_time)) * efficiency * branching_ratio)
+    #np.save(output_path, activity)
+    print("net counts", Net_counts)
+    Reaction_Rate = (activity*time_irradiated) / (abundance *(np.exp(-decay_constant*decay_time))*(1-np.exp(-decay_constant*time_irradiated)))
+    print("reaction rate is", Reaction_Rate)
+    return Reaction_Rate
 
 
 
 
-
-irrad_time = 15
-time_btw_BOC_and_EOB = 345600
-thermal_resonance_crosssection = 98.65E-24#Au198 cm^2
-Resonance_region_crosssection = 1550E-24#Au198 cm^2
-Au_f_crossection = 
-og_sample_abundance =  3.8548810174E17#Au197Cd n
-decay_constant= 2.977E-6 #Au198 n/s
-#measured_activity = np.load(r'/Volumes/SandySSD/Physics/Xenon/Au_measured_activity.npy')
-
-
-#Calculate plain gold activity based on counts and efficiency do we need to do error prop or what do we do with the sigma?
-Au_peak_efficiency = 
-measured_activity = measured_counts/Au_peak_efficiency
-#print(measured_activity.shape)
-
-#Cadmium-covered Gold knowns
-cd_decay=2.977E-6
-cd_irrad_time=15 #s
-cd_time_btw_BOC_and_EOB= #s
-#cd_measured_activity =  np.load(r'/Volumes/SandySSD/Physics/Xenon/Ni_measured_activity.npy')
-cd_t_crosssection = 0
-cd_r_crosssection = 1550E-24
-cd_f_crossection =
-cd_og_abundance = 3.81803676E17
-
-#Calculate Cadmium-covered gold activity based on counts and efficiency
-cd_measured_activity = cd_measured_counts / Au_peak_efficiency 
-
-#Ni knowns
-Ni_decay=1.1322E-7
-Ni_irrad_time=15 #s
-Ni_time_btw_BOC_and_EOB= 432000#s
-#Ni_measured_activity =  np.load(r'/Volumes/SandySSD/Physics/Xenon/Ni_measured_activity.npy')
-Ni_t_crosssection= # Nickel has essentially no t or r bc (n,p) is a threshold reaction???
-Ni_r_crosssection = 4.620E-24 #1550E-24
-Ni_f_crossection =
-Ni_og_abundance= 1.55359946E21 #3.81803676E17
-
-#calculate Ni activity based on counts and efficiency
-Ni_peak_efficiency = 
-Ni_measured_activity = Ni_measured_counts / Ni_peak_efficiency
-
-
-#compacting variables for flux equation
-dt=np.exp(-decay_constant*time_btw_BOC_and_EOB)
-ti=1-np.exp(-decay_constant*irrad_time)
-
-
-cd_dt=np.exp(-cd_decay*cd_time_btw_BOC_and_EOB)
-cd_ti=np.exp(-cd_decay*cd_irrad_time)
-
-Ni_dt = np.exp(-Ni_decay*Ni_time_btw_BOC_and_EOB)
-Ni_ti = np.exp(-Ni_decay*cd_irrad_time)
-
-
-#EpithermalCdFlux= activity/(dt*ti*Resonance_region_crosssection)
-
-#for i in cd_r_crosssection and for j in cd_measured_activity:
-   # A = np.array([cd_t_crosssection,cd_r_crosssection],[thermal_resonance_crosssection,Resonance_region_crosssection])
+Ni_RR = calculate_activity_and_ReactionRate(
+    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities_Counts_Sigmas/Ni_measured_activity.npy',
+    count_time= 4.288E4,
+    efficiency=Ni_peak_efficiency,
+    decay_constant= Ni_decay_constant,
+    branching_ratio= Ni_branching_ratio,
+    time_irradiated = 10,
+    abundance = Ni_abundance,
+    decay_time = ni_btw_EOI_Boc
     
-   #B = np.array([cd_measured_activity/(cd_og_abundance*cd_ti*cd_dt)],[measured_activity/(og_sample_abundance*ti*dt)])
-    #X = np.dot(np.linalg.inv(A),B)
+)
+Ni_flux = (Ni_RR/(10*Ni_crosssectional_Area))
+print("Fast flux",Ni_flux)
 
-#We want to solve using X=B/A
+Cd_Au_RR = calculate_activity_and_ReactionRate(
+    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities_Counts_Sigmas/CdAu_measured_activity_2000s.npy',
+    count_time = Cd_livetime,
+    efficiency = Au_peak_efficiency,
+    decay_constant = Au_decay_constant,
+    branching_ratio = Au_branching_ratio,
+    time_irradiated = 10,
+    abundance = CdAu_abundance,
+    decay_time = CdAu_decay_time
 
-#Get Number of Matrices/Solutions
-N = len(measured_activity)
+)    
+CdAu_Flux = (Cd_Au_RR/(10*Au_Epithermal_crosssectional_area))
+print("Epithermal flux", CdAu_Flux)
 
-#the right hand side of each equation in 3 
-B1 = cd_measured_activity / (cd_og_abundance*cd_ti*cd_dt) 
-B2 = measured_activity / (og_sample_abundance*ti*dt)
-B3 = Ni_measured_activity/(Ni_og_abundance*Ni_ti*Ni_dt)
+Au_RR = calculate_activity_and_ReactionRate(
+    input_path=r'/Volumes/SandySSD/Physics/Xenon/Activities_Counts_Sigmas/Plain_Gold_Activity_50s.npy',
+    count_time = Au_livetime,
+    efficiency = Au_peak_efficiency,
+    decay_constant = Au_decay_constant,
+    branching_ratio = Au_branching_ratio,
+    time_irradiated = 10,
+    abundance = Au_abundance,
+    decay_time = Au_decay_time
 
-#Making B stack to account for the fact that we have three solutions 
-B_stack = np.array([B1,B2,B3])
-
-#A array
-A = np.array([[cd_t_crosssection,cd_r_crosssection,cd_f_crossection],[thermal_resonance_crosssection, Resonance_region_crosssection,Au_f_crossection],[Ni_t_crosssection,Ni_r_crosssection,Ni_f_crossection]])
-
-#invert A then dot B to get B/A - using x0 to be the beginning flux and xf to be the final flux? or does staysl require activity?
-X = np.dot(np.linalg.inv(A),B_stack)
-
-X0=np.dot(np.linalg.inv(A[0:0]),B_stack[0:0])
-Xf = np.dot(np.linalg.inv(A),B_stack)
-
-#Now separate out thermal and epithermal flux from X matrix
-thermal_flux = X[0,:]
-epithermal_flux = X[1,:]
-fast_flux = X[2,:]
-
-print(thermal_flux + epithermal_flux + fast_flux)
-
-
-
+)
+thermal_flux = ((Au_RR-Cd_Au_RR)/(10*Au_thermal_crosssectional_area))
+print("thermal flux",thermal_flux)
 
 
 
