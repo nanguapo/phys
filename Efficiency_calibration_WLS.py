@@ -7,44 +7,45 @@ from statsmodels.iolib.table import (SimpleTable, default_txt_fmt)
 
 
 #input data - paste from speadsheet
-y = [14.8024786,
-14.29593546,
-14.10630147,
-13.94759451,
-13.86945773,
-13.49573418,
-13.36967609,
-13.3422941,
-13.2945571,
-13.27706317,
-13.25198225,
-13.08119509]
-x = [4.804266916,
-5.500849964,
-5.842152144,
-6.019493053,
-6.096387467,
-6.658421745,
-6.766018889,
-6.871672039,
-6.990615552,
-6.994244853,
-7.014481861,
-7.250408375]
+y = [-4.144195406,
+-4.615789451,
+-4.87771676,
+-5.037329818,
+-5.6008665,
+-5.704750874,
+-5.803858765,
+-5.885170468,
+-5.910485919,
+-6.027966746,
+-6.019148544,
+-6.09361663]
+
+x = [4.802230098,
+5.500022754,
+5.841450923,
+6.018876143,
+6.657887803,
+6.765474868,
+6.871173241,
+6.990135867,
+7.013982019,
+7.100809039,
+7.169457786,
+7.249929798]
 
 # Uncertainty - the default is relative uncertainty
-sigma_y = np.array([0.001584706691,
-0.003431322344,
-0.006262742421,
-0.008460420437,
-0.007120964522,
-0.003922159274,
-0.007666515422,
-0.003623833747,
-0.004493234363,
-0.01359314576,
-0.003898803912,
-0.003241638153])
+sigma_y = np.array([2.57E-03,
+6.33E-03,
+3.86E-03,
+1.44E-02,
+7.93E-03,
+1.46E-02,
+8.26E-03,
+1.03E-02,
+9.01E-03,
+2.96E-02,
+2.76E-02,
+7.96E-03])
 w = 1 / (sigma_y**2)
 
 #add a constant
@@ -57,7 +58,10 @@ res_wls = mod_wls.fit()
 #override the scaling so that it reads the weights as absolute weights rather than relative weights and gives the absolute uncertainties of the slope and intercept
 res_wls_absolute = mod_wls.fit(cov_type='fixed scale', cov_kwds={'scale': 1.0})
 
-print("\n Absolute Weights (True Instrumental Propagation) ---")
+intercept = res_wls_absolute.params[0]
+slope = res_wls_absolute.params[1]
+
+print("\n Absolute Weights")
 print(f"Intercept Error: {res_wls_absolute.bse[0]}")
 print(f"Slope Error: {res_wls_absolute.bse[1]}")
 
@@ -82,9 +86,32 @@ plt.figure(figsize=(8, 5))
 plt.scatter(x, y, c=w, cmap='viridis', s=100, label='Data (color = weight)', edgecolor='k', zorder=3)
 plt.plot(x, res_wls.fittedvalues, color='red', linewidth=2, label='WLS Fitted Line')
 
-plt.title('Weighted Least Squares (WLS) Regression Fit for 7/03/26 Simulated Eu Gas Relative Efficiency')
+plt.title('Weighted Least Squares (WLS) Regression Fit for FIPPS Eu Relative Efficiency w/o 1805 Line')
 plt.xlabel('Ln(Energy in keV)')
 plt.ylabel('Ln(Counts Per Yield)')
+plt.colorbar(label='Observation Weight')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.show()
+
+#turning it back into regular graph for easy legibility of the energy
+raw_energy = np.exp(x)
+raw_counts = np.exp(y)
+
+#smooth x array
+raw_energy_smooth = np.linspace(min(raw_energy), max(raw_energy), 500)
+#curve of best fit
+raw_counts_fit = np.exp(intercept) * (raw_energy_smooth ** slope)
+
+plt.figure(figsize=(8, 5))
+# plot the raw data points
+plt.scatter(raw_energy, raw_counts, c=w, cmap='viridis', s=100, label='Raw Data (color = weight)', edgecolor='k', zorder=3)
+# plot the curved line of best fit
+plt.plot(raw_energy_smooth, raw_counts_fit, color='red', linewidth=2, label='WLS Fitted Power-Law Curve')
+
+plt.title('Linear Scale: FIPPS Eu Relative Efficiency w/o 1805 Line')
+plt.xlabel('Energy (keV)')
+plt.ylabel('Counts Per Yield')
 plt.colorbar(label='Observation Weight')
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.6)
