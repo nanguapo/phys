@@ -1,4 +1,4 @@
-
+#author: Julian Herrera - jrherrera@udallas.edu . Previous author is Basile
 #libraries
 import numpy as np
 import matplotlib.pyplot as plt
