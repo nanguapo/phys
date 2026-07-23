@@ -101,22 +101,15 @@ def report(E, mu, sig_t, popt, pcov, red_chi2, polyLog, inflate=True, #inflate =
         print(f"        power-law exponent = {popt[1]/sig_t:+.5g} "
               f"+/- {np.sqrt(C[1,1])/sig_t:.4g}")
 
-    print(f"\n  F1  mu  = {mu:.10g}")
-    print(f"  F2  sig = {sig_t:.10g}")
+    print(f"\n  mu  = {mu:.10g}")
+    print(f"  sig = {sig_t:.10g}")
     for k, c in enumerate(popt):
-        print(f"  G{k+1}  c{k}  = {c:.10g}   +/- {np.sqrt(C[k,k]):.6g}")
+        print(f"  c{k}  = {c:.10g}   +/- {np.sqrt(C[k,k]):.6g}")
     for m, vm in enumerate(var_coeffs):
-        print(f"  H{m+1}  v{m}  = {vm:.10g}")
+        print(f"  v{m}  = {vm:.10g}")
 
-    poly_c = " + ".join(f"$G${k+1}*B1^{k}" for k in range(d+1)
-                        ).replace("*B1^0", "").replace("B1^1", "B1")
-    poly_v = " + ".join(f"$H${m+1}*B1^{m}" for m in range(2*d+1)
-                        ).replace("*B1^0", "").replace("B1^1", "B1")
-    print("\n  sheet formulas (energy in A1):")
-    print("    B1  u     =(LN(A1)-$F$1)/$F$2")
-    print(f"    C1  eff   =EXP({poly_c})")
-    print(f"    D1  sigma =C1*SQRT({poly_v})")
-
+    
+    
     print(f"\n  valid {E.min():.2f} to {E.max():.2f} keV -- do not extrapolate")
     if inflate:
         print(f"  uncertainties scaled by sqrt(red.chi2) = {np.sqrt(red_chi2):.3f}")
