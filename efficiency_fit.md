@@ -29,7 +29,7 @@ Outputs:
   
 
 How to get the relative efficiency at certain lines:
-  Navigate to this sheet: https://docs.google.com/spreadsheets/d/1lpTHxNY7b5FSSnZFpxfjWzzeSIVC-zpX/edit?          usp=sharing&ouid=114456628968102514395&rtpof=true&sd=true and go to the NEW RELATIVE EFFICIENCY sheet
+  Navigate to this sheet: https://docs.google.com/spreadsheets/d/1lpTHxNY7b5FSSnZFpxfjWzzeSIVC-zpX/edit?usp=sharing&ouid=114456628968102514395&rtpof=true&sd=true and go to the NEW RELATIVE EFFICIENCY sheet
   Place the inputs into their respective cells. If you don't have an input like v10 etc that is because that input is for a higher order polynomial and thus the cell can be left blank and will not affect the result. The efficiency values should autopopulate based off of the formulae once the energy values are input.
 
 Good luck.
