@@ -9,21 +9,9 @@ from uncertainties import unumpy
 import io
 from scipy import stats
 
-#paste your data here from the sheet as a triple-quoted string
-pasted = """Energy, y, y_err
-121.7817,2699142.203, 2842.84967
-244.6975, 1623185.43, 10234.17028
-344.2785, 1332957.879, 60203.61625
-411.1163, 1139164.433, 10895.65954
-778.904, 724631.4572, 4258.32842
-867.378, 640591.5626, 6013.215981
-964.079, 627291.7241, 3441.233682
-1112.074, 578959.7315, 3428.096311
-1212.948, 513947.7401, 8557.606572
-1299.14, 522841.3962, 7046.04422
-1408.006, 483285.8513, 2410.150622
-"""
-df = pd.read_csv(io.StringIO(pasted), skipinitialspace=True)
+#read the data from the csv - rename line 13 to the name of your csv
+df = pd.read_csv('NAME.csv')
+
 E, y, y_err = (df[c].values for c in ["Energy","y","y_err"])
 
 
